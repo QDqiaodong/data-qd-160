@@ -1,0 +1,13 @@
+{
+  "reactants": [
+    "H2",
+    "O2"
+  ],
+  "products": [
+    "H2O"
+  ],
+  "available_moles": {
+    "H2": "5",
+    "O2": "2"
+  }
+}
