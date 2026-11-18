@@ -1,0 +1,58 @@
+{
+  "records": [
+    {
+      "record_id": "a",
+      "formula": "A",
+      "experiment_id": "e1",
+      "label": "positive",
+      "pin": "free"
+    },
+    {
+      "record_id": "b",
+      "formula": "A",
+      "experiment_id": "e2",
+      "label": "negative",
+      "pin": "free"
+    },
+    {
+      "record_id": "c",
+      "formula": "A",
+      "experiment_id": "e3",
+      "label": "negative",
+      "pin": "free"
+    },
+    {
+      "record_id": "d",
+      "formula": "B",
+      "experiment_id": "e4",
+      "label": "positive",
+      "pin": "free"
+    },
+    {
+      "record_id": "e",
+      "formula": "B",
+      "experiment_id": "e5",
+      "label": "positive",
+      "pin": "free"
+    },
+    {
+      "record_id": "f",
+      "formula": "B",
+      "experiment_id": "e6",
+      "label": "negative",
+      "pin": "free"
+    }
+  ],
+  "test_quotas": {
+    "positive": {
+      "lower": 1,
+      "upper": 2,
+      "target": 1
+    },
+    "negative": {
+      "lower": 1,
+      "upper": 2,
+      "target": 1
+    }
+  }
+}

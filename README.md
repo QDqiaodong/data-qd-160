@@ -45,6 +45,27 @@ cli.py 与 lots.py 衔接两个命令的数据链路。fixtures 为明确自制�
 .venv/bin/reaction-lots --source fixtures/lots-diamond.json --output run/lots-diamond.json
 ```
 
+## 防泄漏训练/测试切分（`reaction-split`）
+
+`reaction-split --source INPUT --output REPORT` 为化学实验分类样本生成不泄漏的
+训练/测试清单。元素计数完全相同的化学式（如 `H2O` 与 `OH2`）或共享
+`experiment_id` 的样本取无向传递闭包，每个分量不可拆分；闭包先于配额规划，
+含相反 `pin` 的分量报 `pin_conflict`，否则在分量整体归属上联合满足两类测试
+配额并最小化两类测试数到目标的绝对偏差之和，同分时按 `record_id` 升序的
+0/1 归属向量取字典序最小。规划器按正例计数行保存负例可达位图，只保留有界
+计数状态与规范前缀，不枚举分量子集。
+
+```sh
+.venv/bin/reaction-split --source fixtures/split-example1.json --output run/split1.json
+.venv/bin/reaction-split --source fixtures/split-example2.json --output run/split2.json
+.venv/bin/reaction-split --source fixtures/split-example3.json --output run/split3.json
+.venv/bin/reaction-split --source fixtures/split-scale-600.json --output run/split600.json
+```
+
+输入严格为 `{"records":[...],"test_quotas":{...}}`：0..600 条样本、每标签最多
+300 条、配额为 0..300 的 JSON 整数闭区间。原五个命令的输入、输出与失败行为
+不变。完整契约见 [docs/contract.md](docs/contract.md)。
+
 ## 业务与样例
 
 # Exact reaction batch material accounting v1

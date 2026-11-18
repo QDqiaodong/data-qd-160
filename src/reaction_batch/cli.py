@@ -3,6 +3,7 @@ LOTS_DESCRIPTION='Ordered lot material accounting with lineage isolation'
 ASSAY_DESCRIPTION='Exact composition bounds under element molar measurements'
 PEAKS_DESCRIPTION='Shared-drift chromatographic peak identity reconciliation'
 ISOTOPES_DESCRIPTION='Exact isotope mass/tag joint distribution and channel accounting'
+SPLIT_DESCRIPTION='Leakage-safe train/test split for chemistry classification samples'
 import argparse, json, sys
 from pathlib import Path
 from .common import read, save
@@ -10,6 +11,7 @@ from .assay import analyze as analyze_assay
 from .lot_model import analyze as analyze_lots
 from .peaks import analyze as analyze_peaks
 from .isotopes import analyze as analyze_isotopes
+from .split import analyze as analyze_split
 from .model import analyze
 
 
@@ -36,6 +38,11 @@ def run_peaks(source):
 def run_isotopes(source):
     data,digest=read(source)
     return {'schema_version':1,'source_sha256':digest,'result':analyze_isotopes(data)}
+
+
+def run_split(source):
+    data,digest=read(source)
+    return {'schema_version':1,'source_sha256':digest,'result':analyze_split(data)}
 
 
 def _main(description, compute):
@@ -69,6 +76,10 @@ def peaks_main():
 
 def isotopes_main():
     return _main(ISOTOPES_DESCRIPTION, run_isotopes)
+
+
+def split_main():
+    return _main(SPLIT_DESCRIPTION, run_split)
 
 
 if __name__=='__main__':

@@ -656,3 +656,187 @@ tagged overflow tail and empty gates.
 reaction-isotopes --source fixtures/isotopes-example1.json --output run/isotopes1.json
 reaction-isotopes --source fixtures/isotopes-example2.json --output run/isotopes2.json
 ```
+
+## Split mode (`reaction-split`)
+
+`reaction-split --source INPUT --output REPORT` adds a sixth, independent
+command for teaching-data hygiene: it turns classified chemistry samples into
+a train/test listing in which records that could leak into the other side stay
+together.  It does not train a model, infer a chemical structure or claim that
+two formulas with equal element counts denote the same real molecule.  The
+original five commands keep their inputs, reports and exit behaviour.
+
+### Input
+
+The input is exactly
+
+```json
+{
+  "records": [
+    {"record_id": "a", "formula": "H2O", "experiment_id": "e1",
+     "label": "positive", "pin": "free"}
+  ],
+  "test_quotas": {
+    "positive": {"lower": 1, "upper": 1, "target": 1},
+    "negative": {"lower": 0, "upper": 0, "target": 0}
+  }
+}
+```
+
+- `records` has 0..600 entries.  Each entry is exactly
+  `{record_id, formula, experiment_id, label, pin}`.
+  `record_id` uses `common.ident` and is globally unique.
+  `formula` uses the full `chemistry.formula` grammar and every existing
+  limit; the periodic table is not consulted and the isotope command's
+  80-atom bound does not apply.  `experiment_id` uses `common.ident` and may
+  repeat.  `label` is exactly `positive` or `negative`; `pin` is exactly
+  `free`, `train` or `test`.
+- At most 300 records may carry one label.
+- `test_quotas` is exactly `{positive, negative}` and each block is exactly
+  `{lower, upper, target}`, all JSON integers 0..300 with booleans rejected
+  and `lower <= upper`.  `target` need not lie inside the interval or inside
+  the actual label count.  `lower` above the actual total is legal but may be
+  infeasible.  Quotas constrain the raw test record counts per label, not
+  group counts; there is no train quota and no total-test quota.
+- Arrays and nested objects accept only the listed fields.  Any unknown field,
+  duplicate `record_id`, invalid formula, label or pin, over-limit array or
+  per-label count, or literal error (including a boolean where an integer is
+  required) is a whole-batch input error: exit 2, no partial report, and an
+  existing report is left untouched.  A legal input that cannot be split is
+  *not* an error; it produces an `infeasible` report.
+
+`common.read`/`common.save` still apply: at most 8 MB, duplicate JSON keys and
+non-finite numbers rejected, `source_sha256` bound to the exact source bytes,
+refusal of an output that is a symlink or the same path as the input, and an
+atomic successful replacement.  No database, external solver, network call or
+new runtime dependency is used.
+
+### Leakage groups
+
+Two records are linked when their parsed formulas have exactly the same
+element-key to integer-count mapping, or when they share an `experiment_id`.
+Both relations are undirected, and the reported groups are their joint
+transitive closure: a chain such as equal formula, then shared experiment,
+then equal formula again lands in one group.  `H2O` and `OH2` are linked
+because their element counts are identical; `H4O2` is not equal to `H2O`
+(no empirical-formula reduction is performed).  Labels never cut a group, so
+a group can hold both labels, and grouping is decided before quota planning.
+Each group keeps every original record: nothing is dropped or merged into a
+single sample.
+
+### Planning
+
+`pin = free` imposes nothing.  A group containing at least one `train` pin is
+forced to train, one containing at least one `test` pin is forced to test,
+and a group containing both is a conflict.  Compatible same-direction pins
+are harmless.  All groups are checked for pin conflicts before any quota
+arithmetic; if any conflict exists the result is `pin_conflict` even when
+quotas would also fail.
+
+Otherwise let `P` and `N` be the test-side positive and negative record
+counts and `D = |P - positive.target| + |N - negative.target|`.  A complete
+listing is valid when every group is on one side, every pin is honoured and
+both test counts lie in their closed quota intervals.  Among all valid
+listings the canonical one minimises `D`; ties are broken by the 0/1
+assignment vector over all record ids in Unicode code-point order with
+`train = 0` and `test = 1`, taking the lexicographically smallest.  Because a
+group cannot be split, this is the same as comparing group assignments in
+increasing minimum-`record_id` order, and the tie-break is resolved on the
+original record identity vector rather than by choosing a count cell first.
+Label order, source array order, disjoint-set roots and hash iteration order
+never break a tie.  Exactly one canonical listing is reported.
+
+### Report
+
+A successful report is exactly
+
+```json
+{
+  "schema_version": 1,
+  "source_sha256": "<sha256>",
+  "result": {"groups": [...], "status": "feasible",
+             "split": {"train": ["..."], "test": ["..."],
+                       "test_counts": {"positive": 1, "negative": 0},
+                       "deviation": 0}}
+}
+```
+
+`result` always has `groups` and `status`.  Each group is exactly
+`{"group_id", "record_ids", "counts", "forced"}`: `group_id` is its smallest
+`record_id`, `record_ids` is sorted by Unicode code point (so `group_ids` are
+increasing down the array), `counts` adds the original records per label, and
+`forced` is `free`, `train`, `test` or `conflict`.  Counts are record counts,
+never formula or experiment counts.
+
+Feasible results add `split`, whose `train` and `test` are sorted disjoint
+`record_id` arrays covering every record, plus the integer `test_counts` and
+`deviation`.  An infeasible result with a pin conflict is exactly
+`{"groups": [...], "status": "infeasible", "reason": "pin_conflict",
+"conflict_groups": [...]}` with every `forced = conflict` id sorted.  An
+infeasible result without a pin conflict is exactly
+`{"groups": [...], "status": "infeasible", "reason": "quotas"}`.  No
+infeasible report carries `split`, an approximate listing or a fabricated
+deviation; groups are never split, records never dropped and quotas never
+relaxed.  All counts and `deviation` are JSON integers.
+
+Empty `records` with both `lower` bounds 0 is feasible with empty arrays,
+`test_counts` of 0 and `deviation` equal to the two targets; otherwise it is
+`quotas`-infeasible.
+
+### Algorithm and state
+
+Grouping is a disjoint-set union over a first-seen index per element-count
+tuple and per experiment id, so each record triggers at most two unions and
+the closure is exact by construction.
+
+Planning uses only free groups.  For every suffix of free groups the planner
+stores a reachability table: one Python integer per possible positive count,
+whose bits are the reachable negative counts.  The table is at most 301
+integers of at most 301 bits whatever the number of groups, and every
+snapshot step costs at most 301 shifted ORs; memory is bounded by
+`O(free_groups * 301 * 301 bits)` of shared rows, far below the 192 MiB
+ceiling at 600 records.  Targets and quotas give at most a few hundred
+`(P, N)` pairs at the optimal deviation, found by scanning the reachable
+table rather than assigning groups.
+
+The canonical assignment is then rebuilt over all groups sorted by
+`group_id`: forced groups are fixed, and each free group is placed on train
+if the remaining suffix can still complete an optimal in-quota assignment and
+on test otherwise.  Preferring train at the earliest code point is exactly
+the documented lexicographic minimum, and every step consults the same exact
+reachability table, so the global deviation, quota membership and
+canonical identity are preserved together.  No subset of group assignments
+is enumerated, and no random seed or greedy count choice stands in for the
+optimum.
+
+### Examples
+
+`fixtures/split-example1.json`: `a(H2O,e1)`, `b(OH2,e2)`, `c(CO2,e2)`,
+`d(O2,e3)`.  `a` and `b` share element counts, `b` and `c` share `e2`, so
+`a, b, c` form one multi-hop group and `d` is alone.  Quotas
+`positive [1,2] target 1`, `negative [0,2] target 1` yield
+`test = [a, b, c]`, `deviation = 1`.
+
+`fixtures/split-example2.json`: six free records in two formula groups
+(`a, b, c` with `A`; `d, e, f` with `B`), both quotas `[1,2] target 1`.  The
+two count choices `(1,2)` and `(2,1)` both have `D = 1`; the canonical test
+side is `[d, e, f]`, not the smaller-positive count cell.
+
+`fixtures/split-example3.json`: the bridge case.  As written, `a` and `b`
+share `e1` while pinned `test` and `train`, so the result is
+`pin_conflict` with `conflict_groups = [a]`.  Removing the shared experiment
+(or changing `b.experiment_id` back to `e2`) separates the groups and the same
+pins become feasible.
+
+`fixtures/split-scale-600.json`: 600 independent free components
+`r000..r599`, formulas `A1..A600`, unique experiments, 300 records per label;
+both quotas are exact `150` with target `150`.  The canonical test side is
+`r150..r299` plus `r450..r599`, `deviation = 0`, 600 groups; the CLI run stays
+well under 192 MiB peak RSS.
+
+```sh
+reaction-split --source fixtures/split-example1.json --output run/split1.json
+reaction-split --source fixtures/split-example2.json --output run/split2.json
+reaction-split --source fixtures/split-example3.json --output run/split3.json
+reaction-split --source fixtures/split-scale-600.json --output run/split600.json
+```

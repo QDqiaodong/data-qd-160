@@ -1,0 +1,30 @@
+{
+  "records": [
+    {
+      "record_id": "a",
+      "formula": "H2O",
+      "experiment_id": "e1",
+      "label": "positive",
+      "pin": "test"
+    },
+    {
+      "record_id": "b",
+      "formula": "CO2",
+      "experiment_id": "e1",
+      "label": "negative",
+      "pin": "train"
+    }
+  ],
+  "test_quotas": {
+    "positive": {
+      "lower": 1,
+      "upper": 1,
+      "target": 1
+    },
+    "negative": {
+      "lower": 0,
+      "upper": 0,
+      "target": 0
+    }
+  }
+}

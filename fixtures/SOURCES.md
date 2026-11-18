@@ -13,3 +13,8 @@
 - `peaks-scale-40.json`：40 参考 × 40 峰全等价匹配，K=40、整段漂移域最优、每峰支持全部 40 个参考。
 - `isotopes-example1.json`：`reaction-isotopes` 文档示例，A2 联合分布 (20,0):1/4、(21,1):1/2、(22,2):1/4，含质量与标记数边缘均为正但联合为零的 gate、以及前置通道缩小改变后继条件矩的 linkage。
 - `isotopes-example2.json`：多元素多同位素、零丰度条目、嵌套化学式、稀疏包络、带标记的截断尾部与空门样例。
+
+- `split-example1.json`：`reaction-split` 文档示例，H2O/OH2 同计数与共享实验形成多跳分量。
+- `split-example2.json`：两个公式组、两类配额相同，两个最优计数格按记录身份向量破同分。
+- `split-example3.json`：共享实验桥接相反 `pin` 产生 `pin_conflict`。
+- `split-scale-600.json`：600 独立分量、每标签 300 条、精确 150/150 配额的规模样例。

@@ -1,0 +1,44 @@
+{
+  "records": [
+    {
+      "record_id": "a",
+      "formula": "H2O",
+      "experiment_id": "e1",
+      "label": "positive",
+      "pin": "free"
+    },
+    {
+      "record_id": "b",
+      "formula": "OH2",
+      "experiment_id": "e2",
+      "label": "negative",
+      "pin": "free"
+    },
+    {
+      "record_id": "c",
+      "formula": "CO2",
+      "experiment_id": "e2",
+      "label": "positive",
+      "pin": "free"
+    },
+    {
+      "record_id": "d",
+      "formula": "O2",
+      "experiment_id": "e3",
+      "label": "negative",
+      "pin": "free"
+    }
+  ],
+  "test_quotas": {
+    "positive": {
+      "lower": 1,
+      "upper": 2,
+      "target": 1
+    },
+    "negative": {
+      "lower": 0,
+      "upper": 2,
+      "target": 1
+    }
+  }
+}
