@@ -1,0 +1,33 @@
+{
+  "elements": [
+    {
+      "element": "A",
+      "isotopes": [
+        {"mass_number": 10, "abundance": "0.5", "tagged": false},
+        {"mass_number": 11, "abundance": "0.5", "tagged": true}
+      ]
+    },
+    {
+      "element": "B",
+      "isotopes": [
+        {"mass_number": 1, "abundance": "0.75", "tagged": false},
+        {"mass_number": 3, "abundance": "0.25", "tagged": true}
+      ]
+    },
+    {
+      "element": "C",
+      "isotopes": [
+        {"mass_number": 4, "abundance": "0", "tagged": false},
+        {"mass_number": 6, "abundance": "1", "tagged": true}
+      ]
+    }
+  ],
+  "queries": [
+    {"query_id": "mixed", "formula": "A2B(BC)2", "cutoff": 9, "channels": [
+      {"channel_id": "light", "mass": {"lower": 0, "upper": 30}, "tag_count": {"lower": 0, "upper": 3}},
+      {"channel_id": "tagged", "mass": {"lower": 0, "upper": 40}, "tag_count": {"lower": 2, "upper": 6}},
+      {"channel_id": "empty", "mass": {"lower": 0, "upper": 40}, "tag_count": {"lower": 7, "upper": 80}}
+    ]},
+    {"query_id": "zero_abundance", "formula": "C", "cutoff": 0, "channels": []}
+  ]
+}

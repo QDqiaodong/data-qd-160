@@ -87,3 +87,18 @@ assignment 向量）。支持只来自同一合法漂移下的完整 K 匹配，
 漂移边界为可带一个前导负号的十进制字符串，时刻与窗口为非负十进制字符串；全部输出边界
 为最简 Fraction 字符串。算法按漂移区间端点扫描并用增量最大匹配与交错路径结构求支持，
 不枚举匹配。完整契约见 [docs/contract.md](docs/contract.md)。
+
+## 分子同位素联合分布与选择性检出核算（`reaction-isotopes`）
+
+`reaction-isotopes --source INPUT --output REPORT` 按用户提供的同位素丰度表计算分子的精确名义质量包络，以及按名义质量与标记原子数联合触发的通道检出概率、条件标记数均值/方差和未检出部分。
+同位素质量数、丰度与 `tagged` 均来自输入，不内置自然丰度或真实元素表；每个原子独立抽样，同元素多个原子仍按位置区分，因此 `(M,T)` 概率是各原子赋值概率的累加，而不是两个边缘分布相乘。
+通道按输入顺序排他归属，`missed` 含全部截断尾部，`overflow` 是 `missed` 的子集，不重复相加。
+所有概率与矩为精确最简有理数字符串；查询相互独立；相同源字节重跑报告相同。
+原 `reaction-batch`、`reaction-lots`、`reaction-assay`、`reaction-peaks` 接口保持兼容。
+
+```sh
+.venv/bin/reaction-isotopes --source fixtures/isotopes-example1.json --output run/isotopes1.json
+.venv/bin/reaction-isotopes --source fixtures/isotopes-example2.json --output run/isotopes2.json
+```
+
+完整契约、通道排他规则、矩守恒与样例说明见 [docs/contract.md](docs/contract.md)。

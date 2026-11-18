@@ -2,12 +2,14 @@ DESCRIPTION='Exact formula balancing and limiting-reagent batch accounting'
 LOTS_DESCRIPTION='Ordered lot material accounting with lineage isolation'
 ASSAY_DESCRIPTION='Exact composition bounds under element molar measurements'
 PEAKS_DESCRIPTION='Shared-drift chromatographic peak identity reconciliation'
+ISOTOPES_DESCRIPTION='Exact isotope mass/tag joint distribution and channel accounting'
 import argparse, json, sys
 from pathlib import Path
 from .common import read, save
 from .assay import analyze as analyze_assay
 from .lot_model import analyze as analyze_lots
 from .peaks import analyze as analyze_peaks
+from .isotopes import analyze as analyze_isotopes
 from .model import analyze
 
 
@@ -29,6 +31,11 @@ def run_assay(source):
 def run_peaks(source):
     data,digest=read(source)
     return {'schema_version':1,'source_sha256':digest,'result':analyze_peaks(data)}
+
+
+def run_isotopes(source):
+    data,digest=read(source)
+    return {'schema_version':1,'source_sha256':digest,'result':analyze_isotopes(data)}
 
 
 def _main(description, compute):
@@ -58,6 +65,10 @@ def assay_main():
 
 def peaks_main():
     return _main(PEAKS_DESCRIPTION, run_peaks)
+
+
+def isotopes_main():
+    return _main(ISOTOPES_DESCRIPTION, run_isotopes)
 
 
 if __name__=='__main__':

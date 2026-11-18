@@ -1,0 +1,21 @@
+{
+  "elements": [
+    {
+      "element": "A",
+      "isotopes": [
+        {"mass_number": 10, "abundance": "0.5", "tagged": false},
+        {"mass_number": 11, "abundance": "0.5", "tagged": true}
+      ]
+    }
+  ],
+  "queries": [
+    {"query_id": "joint", "formula": "A2", "cutoff": 2, "channels": []},
+    {"query_id": "linkage", "formula": "A2", "cutoff": 2, "channels": [
+      {"channel_id": "c1", "mass": {"lower": 20, "upper": 21}, "tag_count": {"lower": 0, "upper": 2}},
+      {"channel_id": "c2", "mass": {"lower": 20, "upper": 22}, "tag_count": {"lower": 0, "upper": 2}}
+    ]},
+    {"query_id": "gate", "formula": "A2", "cutoff": 2, "channels": [
+      {"channel_id": "impossible", "mass": {"lower": 21, "upper": 21}, "tag_count": {"lower": 0, "upper": 0}}
+    ]}
+  ]
+}

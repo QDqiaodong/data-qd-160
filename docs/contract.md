@@ -491,3 +491,168 @@ the `40!` perfect matchings.
 reaction-peaks --source fixtures/peaks-example1.json --output run/peaks1.json
 reaction-peaks --source fixtures/peaks-scale-40.json --output run/peaks40.json
 ```
+
+## Isotopes mode (`reaction-isotopes`)
+
+`reaction-isotopes --source INPUT --output REPORT` adds a fifth, independent
+command for the joint isotope distribution of a molecule and the exclusive
+detection probability of user-defined channels.  It is a forward probability
+calculation over teaching data: every isotope mass number and abundance, and
+every `tagged` flag, comes from the input; no natural-abundance or real
+periodic table is built in.  The original `reaction-batch`, `reaction-lots`,
+`reaction-assay` and `reaction-peaks` inputs, outputs and exit codes are
+unchanged.
+
+### Input
+
+The input is exactly
+
+```json
+{
+  "elements": [
+    {"element": "A",
+     "isotopes": [
+       {"mass_number": 10, "abundance": "0.5", "tagged": false},
+       {"mass_number": 11, "abundance": "0.5", "tagged": true}]}
+  ],
+  "queries": [
+    {"query_id": "q", "formula": "A2", "cutoff": 2,
+     "channels": [
+       {"channel_id": "c1", "mass": {"lower": 20, "upper": 22},
+        "tag_count": {"lower": 0, "upper": 2}}]}
+  ]
+}
+```
+
+- `elements` has 1..20 entries.  `element` is an ASCII `[A-Z][a-z]?` token,
+  unique across the array; it is *not* checked against the periodic table.
+  `isotopes` has 1..6 entries with distinct `mass_number`.  `mass_number` is a
+  JSON integer 1..300 (booleans are rejected).  `abundance` uses the existing
+  `quantity` nonnegative decimal-string grammar and range, plus `<= 1`; the
+  abundances of one element sum to exactly 1.  A zero-abundance entry is legal
+  and still participates in the minimum-`mass_number` base definition.
+  `tagged` is a JSON boolean.
+- `queries` has 1..4 entries with unique `query_id` (`common.ident`).
+  `formula` uses the existing `chemistry.formula` grammar and its limits, and
+  additionally the parsed total atom count must be `<= 80`; every element that
+  actually appears must have an isotope table (unused tables are legal).
+  `cutoff` is a JSON integer 0..128 (booleans rejected).  `channels` has 0..16
+  entries, in priority order, with `channel_id` unique inside the query.
+- `mass` and `tag_count` are exactly `{"lower", "upper"}`.  Mass bounds are
+  JSON integers 0..10^9 with `lower <= upper` and `upper <= B + cutoff`;
+  tag bounds are JSON integers 0..80 with `lower <= upper` and may exceed the
+  atom count, producing an empty gate.  Every integer rejects booleans.
+- All arrays and nested objects accept only the fields listed above.  Unknown
+  fields, duplicate identifiers, a missing element table, an over-limit atom
+  count, a bad abundance sum, an inverted or over-limit interval, or any
+  literal error in any query is a whole-batch input error: exit 2, no partial
+  report, and any existing report is left untouched.
+
+`common.read`/`common.save` still apply: at most 8 MB, duplicate JSON keys and
+non-finite numbers rejected, `source_sha256` bound to the exact source bytes,
+refusal of an output that is a symlink or the same path as the input, and an
+atomic successful replacement.  No database, external solver, network call or
+new runtime dependency is used.
+
+### Semantics
+
+For element `e` with `n_e` atoms, `b_e` is the minimum `mass_number` among
+*all* of its input isotope entries (including zero-abundance ones).  The base
+mass is `B = sum_e n_e * b_e`.  Each atom is sampled independently from its
+element's table; the nominal mass `M` is the sum of the sampled mass numbers
+and `T` counts the samples whose `tagged` flag is true.  The offset
+`S = M - B` is always nonnegative.  Results with `0 <= S <= cutoff` are
+retained; those with `S > cutoff` are `overflow`.
+
+The probability of a `(M, T)` pair is the sum over all atom assignments: two
+atoms taking one light and one heavy isotope are two distinct assignments, so
+their weights add.  The joint law is never assembled from the two marginals.
+
+Channels are checked in input order; each retained `(M, T)` is assigned to the
+first channel whose closed `mass` interval contains `M` **and** whose closed
+`tag_count` interval contains `T`.  An outcome assigned to no channel is
+`missed`, and includes every truncated tail.  `overflow` is the `S > cutoff`
+part, which is therefore a subset of `missed`; it is never added to `missed`
+again.  Because assignment depends on the joint event, shrinking an earlier
+channel changes the exclusive probability and conditional tag moments of later
+channels even when their own bounds are unchanged.  Queries are independent:
+one query never consumes probability or isotope tables from another.
+
+### Statistics object
+
+Every event block is exactly
+
+```json
+{"probability": "p", "first_moment": "u", "second_factorial_moment": "v",
+ "mean_tags": "mu", "variance_tags": "var"}
+```
+
+with `p = P(E)`, `u = E[T * 1_E]`, `v = E[T*(T-1) * 1_E]`.  When `p > 0`,
+`mu = u/p` and `var = (v + u)/p - mu^2`; when `p = 0`, `u = v = "0"` and
+`mu` and `var` are JSON null.  All numbers are reduced `Fraction` strings
+(`"0"`, `"1"`, `"1/3"`), never JSON decimals, never non-reduced fractions,
+never negative zero.  A tiny negative variance is not rounded to zero by
+tolerance; the exact arithmetic cannot produce one.
+
+### Report
+
+A successful report is exactly
+
+```json
+{
+  "schema_version": 1,
+  "source_sha256": "<sha256>",
+  "result": {"queries": [
+    {"query_id": "...", "base_mass": 20,
+     "envelope": [{"mass": 20, "probability": "1/4"}],
+     "overflow": {"...": "..."},
+     "channels": [{"channel_id": "...", "stats": {"...": "..."}}],
+     "missed": {"...": "..."},
+     "total": {"...": "..."}}
+  ]}
+}
+```
+
+`queries` follows input order.  `base_mass` is the JSON integer `B`.
+`envelope` lists every retained mass with positive probability in ascending
+mass order; zero-probability masses are omitted (sparse gaps are not filled).
+`channels` follows input order and always keeps zero-probability channels.
+`total` is the untruncated molecule statistic with `probability` exactly `"1"`.
+
+The envelope probabilities plus `overflow.probability` sum to 1.  The
+`channels` and `missed` blocks partition every outcome, so their three moment
+components (`p`, `u`, `v`) add term by term to `total`; conditional means and
+variances are not additive.  Identical source bytes produce identical reports.
+
+### Algorithm
+
+The implementation keeps an explicit joint state `(S, T)` for retained offsets
+and multiplies the per-atom choices cycle by cycle; a state whose offset has
+already passed `cutoff` is dropped because offsets never decrease, and its
+probability and tag moments remain exactly recoverable as `total - kept`.  The
+alternative exact representation — the full joint state without the cutoff
+pruning plus a monotone-tag tail moment summary — is equivalent: both preserve
+the same atom-position multiplicity and the same first-come channel boundary,
+and both conserve the truncated tail's probability and moments.  Small
+molecules are checked in the tests by an independent per-position enumeration
+that does not call this solver or any recurrence.
+
+### Examples
+
+`fixtures/isotopes-example1.json`: element `A` with masses 10 (untagged) and
+11 (tagged), both 1/2.  `A2`, `cutoff = 2`, no channels: the joint law is
+`(20,0):1/4`, `(21,1):1/2`, `(22,2):1/4`, so `total` has `u = 1`,
+`v = 1/2`, `mean_tags = 1`, `variance_tags = 1/2`.  The `gate` query's channel
+`mass=[21,21]`, `tag_count=[0,0]` has probability 0 even though each marginal
+is positive.  The `linkage` query shows a prefix change reshaping the next
+channel's conditional moments.
+
+`fixtures/isotopes-example2.json`: elements `A`, `B` and `C` with several
+isotopes, zero-abundance entries and `tagged` flags whose mass offset differs
+from the tag increment; it exercises a nested formula, a sparse envelope, a
+tagged overflow tail and empty gates.
+
+```sh
+reaction-isotopes --source fixtures/isotopes-example1.json --output run/isotopes1.json
+reaction-isotopes --source fixtures/isotopes-example2.json --output run/isotopes2.json
+```
