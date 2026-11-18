@@ -13,6 +13,7 @@ python3 -m venv .venv
 .venv/bin/python -m pip install --no-build-isolation --no-deps .
 .venv/bin/python -m pip check
 .venv/bin/reaction-batch --source fixtures/input.json --output run/report.json
+.venv/bin/reaction-lots --source fixtures/lots-example.json --output run/lots-example.json
 .venv/bin/python -m unittest discover -s tests -v
 ```
 
@@ -24,8 +25,25 @@ python3 -m venv .venv
 输入和输出不得相同，输出符号链接拒绝。单操作者批处理，不承诺并发发布或断电恢复。
 同输入重跑不累加。测试使用临时目录，运行产物在忽略的run/。
 
-src/reaction_batch/model.py 为业务模型，相关算法模块独立组织；common.py 提供受限JSON及报告发布，
-cli.py 衔接数据链路。fixtures 为明确自制样例，代码与样例采用MIT许可。
+src/reaction_batch/model.py 为原批次业务模型，lot_model.py 为投料/隔离账本；common.py 提供受限JSON及报告发布，
+cli.py 与 lots.py 衔接两个命令的数据链路。fixtures 为明确自制样例，代码与样例采用MIT许可。
+
+## 批次投料与隔离（`reaction-lots`）
+
+`reaction-lots --source INPUT --output REPORT` 处理 `{"operations":[...]}` 有序事实流：
+`stock` 建 lot，`run` 按同式合并、既有严格正配平规则扣料并生成新产品 lot 与直接父子边，
+`hold`/`release` 管理活动隔离根。被隔离集合为所有活动根沿成功 run 谱系的后代并含根自身；
+`blocked` 由谱系而非当前库存推导。报告仅含最终 `operations` 状态、按标识排序的 `lots`
+（`remaining_moles` 为最简 Fraction 字符串）与 `active_holds`。
+
+业务拒绝（未知 lot、库存不足、被隔离投料、无法配平或不同一进度、身份重用等）记为
+`rejected` 并保持事发前状态；结构/字段/字面值/上限错误整批退出 2 并保留旧报告。
+无输出祖先快照、无全对可达矩阵、遍历非递归；2 万 lot 单链与 6 万边汇合图可在
+192MiB 内完成。完整契约见 [docs/contract.md](docs/contract.md)。
+
+```sh
+.venv/bin/reaction-lots --source fixtures/lots-diamond.json --output run/lots-diamond.json
+```
 
 ## 业务与样例
 

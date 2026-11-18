@@ -1,0 +1,11 @@
+{
+  "operations": [
+    {"op_id": "s1", "type": "stock", "lot": "h1", "formula": "H2", "moles": "0.1"},
+    {"op_id": "s2", "type": "stock", "lot": "h2", "formula": "H2", "moles": "0.2"},
+    {"op_id": "s3", "type": "stock", "lot": "o", "formula": "O2", "moles": "0.15"},
+    {"op_id": "r1", "type": "run",
+     "inputs": [{"lot": "h1", "moles": "0.1"}, {"lot": "h2", "moles": "0.2"}, {"lot": "o", "moles": "0.15"}],
+     "products": [{"lot": "w", "formula": "H2O"}]},
+    {"op_id": "h1op", "type": "hold", "lot": "h1"}
+  ]
+}

@@ -1,0 +1,13 @@
+{
+  "operations": [
+    {"op_id": "s", "type": "stock", "lot": "S", "formula": "A2", "moles": "8"},
+    {"op_id": "b", "type": "run", "inputs": [{"lot": "S", "moles": "1"}], "products": [{"lot": "B", "formula": "A"}]},
+    {"op_id": "c", "type": "run", "inputs": [{"lot": "S", "moles": "1"}], "products": [{"lot": "C", "formula": "A"}]},
+    {"op_id": "d", "type": "run",
+     "inputs": [{"lot": "B", "moles": "2"}, {"lot": "C", "moles": "2"}],
+     "products": [{"lot": "D", "formula": "A2"}]},
+    {"op_id": "hS", "type": "hold", "lot": "S"},
+    {"op_id": "hB", "type": "hold", "lot": "B"},
+    {"op_id": "rS", "type": "release", "lot": "S"}
+  ]
+}

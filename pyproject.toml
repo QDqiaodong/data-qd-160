@@ -9,5 +9,6 @@ requires-python = ">=3.11"
 dependencies = []
 [project.scripts]
 reaction-batch = "reaction_batch.cli:main"
+reaction-lots = "reaction_batch.cli:lots_main"
 [tool.setuptools.packages.find]
 where = ["src"]
