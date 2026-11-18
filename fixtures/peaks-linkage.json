@@ -1,0 +1,17 @@
+{
+  "references": [
+    {"reference_id": "a", "formula": "A", "window": {"lower": "0", "upper": "0"}},
+    {"reference_id": "b", "formula": "A", "window": {"lower": "1", "upper": "1"}},
+    {"reference_id": "c", "formula": "B", "window": {"lower": "0", "upper": "1"}}
+  ],
+  "runs": [
+    {
+      "run_id": "linkage",
+      "drift": {"lower": "0", "upper": "1"},
+      "peaks": [
+        {"peak_id": "p", "formula": "A", "time": "1"},
+        {"peak_id": "q", "formula": "B", "time": "1"}
+      ]
+    }
+  ]
+}

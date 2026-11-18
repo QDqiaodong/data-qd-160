@@ -69,3 +69,21 @@ cli.py 与 lots.py 衔接两个命令的数据链路。fixtures 为明确自制�
 每样品测量 0..120。全部数值为最简 Fraction 字符串；相等区间视为精确等式，
 `1.000000001` 与 `1` 的差异不会被容差吞掉。完整契约、证书定义与样例见
 [docs/contract.md](docs/contract.md)。
+
+## 共同时间漂移下的峰身份核对（`reaction-peaks`）
+
+`reaction-peaks --source INPUT --output REPORT` 对一批色谱观测峰与参考条目作共同时间
+漂移下的全局一对一身份核对：同一运行共享一个仪器漂移量，峰与参考一一配对。报告最大可
+解释峰数 K、能达到 K 的全部漂移区间（闭区间、可含单点、可不相连）、每个峰在所有最优
+解释中的身份支持及可否不被匹配，并给出规范见证（最优漂移最小值处字典序最小的
+assignment 向量）。支持只来自同一合法漂移下的完整 K 匹配，不从跨漂移点的边拼出身份。
+
+```sh
+.venv/bin/reaction-peaks --source fixtures/peaks-example1.json --output run/peaks1.json
+.venv/bin/reaction-peaks --source fixtures/peaks-scale-40.json --output run/peaks40.json
+```
+
+输入严格为 `{"references":[...],"runs":[...]}`；参考 1..40、运行 1..8、每运行峰 0..40。
+漂移边界为可带一个前导负号的十进制字符串，时刻与窗口为非负十进制字符串；全部输出边界
+为最简 Fraction 字符串。算法按漂移区间端点扫描并用增量最大匹配与交错路径结构求支持，
+不枚举匹配。完整契约见 [docs/contract.md](docs/contract.md)。

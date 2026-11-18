@@ -1,0 +1,15 @@
+{
+  "references": [
+    {"reference_id": "a", "formula": "A", "window": {"lower": "0", "upper": "1"}},
+    {"reference_id": "b", "formula": "A", "window": {"lower": "3", "upper": "4"}}
+  ],
+  "runs": [
+    {
+      "run_id": "two-intervals",
+      "drift": {"lower": "-1", "upper": "3"},
+      "peaks": [
+        {"peak_id": "p", "formula": "A", "time": "3"}
+      ]
+    }
+  ]
+}

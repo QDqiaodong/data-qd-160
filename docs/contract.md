@@ -300,3 +300,194 @@ jointly contradictory sample, an empty-measurements sample with
 reaction-assay --source fixtures/assay-example1.json --output run/assay1.json
 reaction-assay --source fixtures/assay-mixed-48.json --output run/assay48.json
 ```
+
+## Peaks mode (`reaction-peaks`)
+
+`reaction-peaks --source INPUT --output REPORT` adds a fourth, independent
+command for shared-drift chromatographic peak identity reconciliation.  A batch
+of observed peaks is checked against a reference catalogue under one common
+instrument drift per run; the command reports the largest explainable peak
+count, every drift that attains it, and the identity each peak takes across all
+optimal explanations.  It never promotes one arbitrary matching into a unique
+identity, and it says nothing about real chemical structure or reaction
+feasibility.  The original `reaction-batch`, `reaction-lots` and
+`reaction-assay` inputs, outputs and exit codes are unchanged.
+
+### Input
+
+The input is exactly
+
+```json
+{
+  "references": [
+    {"reference_id": "a", "formula": "A",
+     "window": {"lower": "0", "upper": "1"}}
+  ],
+  "runs": [
+    {"run_id": "r1", "drift": {"lower": "-1", "upper": "3"},
+     "peaks": [{"peak_id": "p", "formula": "A", "time": "3"}]}
+  ]
+}
+```
+
+- `references` has 1..40 entries.  `reference_id` uses `common.ident` and is
+  globally unique; `formula` uses the existing `chemistry.formula` grammar in
+  full; `window` is exactly `{"lower", "upper"}` with `lower <= upper`.
+- `runs` has 1..8 entries with unique `run_id`.  `drift` is exactly
+  `{"lower", "upper"}` with `lower <= upper`; `peaks` has 0..40 entries with
+  `peak_id` unique inside its run (the same `peak_id` may appear in other
+  runs).
+- Times and window bounds are `common.quantity` nonnegative decimal strings;
+  drift bounds use the same syntax with one optional leading minus sign (the
+  absolute value must still pass `quantity`; `-0` is accepted and normalised
+  to `0` on output).  JSON numbers and booleans are rejected everywhere; no
+  whitespace, plus signs, exponents or fraction notation.
+- Formula texts may repeat freely across references and across peaks; two
+  different texts with identical element counts (for example `H2O` and `OH2`)
+  are merely compatible and never merge identities.
+- Runs are analysed independently against the shared catalogue; a reference
+  occupied in one run is still available in the others.
+- Any unknown field, duplicate identifier, invalid formula or number, inverted
+  interval or breached array limit — in any run — is a whole-batch input
+  error: exit 2, no partial report, and any existing report is left untouched.
+  It never degrades into `K = 0` or a partial publication of earlier runs.
+
+`common.read`/`common.save` still apply: at most 8 MB, duplicate JSON keys and
+non-finite numbers rejected, `source_sha256` bound to the exact source bytes,
+refusal of an output that is a symlink or the same path as the input, and an
+atomic successful replacement.  No database, external solver, network call or
+new runtime dependency is used.
+
+### Semantics
+
+Inside one run every peak is explained by at most one reference and every
+reference explains at most one peak.  A peak with time `t` may pair with a
+reference whose window is `[lo, hi]` exactly when the formula element counts
+are equal and `lo + d <= t <= hi + d`, where `d` is the single shared drift of
+the run, drawn from the closed input drift domain.  The pair is therefore
+feasible precisely on the closed drift interval `[t - hi, t - lo]` clipped to
+the domain.
+
+For a drift `d`, an *explanation* is any set of legal peak/reference pairs
+with no shared endpoint; unmatched peaks and references are allowed.  `K` is
+the largest explanation size over all drifts and all explanations — there is
+no secondary objective such as distance minimisation.  Two peaks that each can
+be matched at some drift need not admit one common drift matching both.
+
+The **best drift set** is every `d` in the closed domain that admits a
+`K`-sized explanation.  It is reported as merged closed intervals sorted by
+`lower`; it may be disconnected and may contain single points, because a
+closed endpoint can beat every open neighbourhood around it.  Overlapping or
+touching closed intervals are merged; each reported interval has
+`lower <= upper` and no open ends or floating-point tolerances are used.
+
+For every peak the report lists the union of `reference_id` values it takes in
+at least one `K`-sized explanation over the whole optimal drift set, plus
+`can_be_unmatched`, which is true iff some `K`-sized explanation leaves the
+peak completely unmatched.  Support can only come from a complete `K`-matching
+at one legal drift: edges that merely satisfy the window in isolation, or that
+exist only at drifts where no `K`-matching exists, are excluded.  An identity
+is certain only when the support is a single reference and
+`can_be_unmatched` is false.  `K = 0` is a normal result: the whole input
+drift domain is optimal, every support is empty and every
+`can_be_unmatched` is true.
+
+The **witness** is a reproducible optimal explanation: its drift is the
+minimum of the best drift set, and among the `K`-matchings at that single
+drift it chooses the lexicographically smallest assignment vector — peaks
+ordered by `peak_id` (Unicode code points), `reference_id` compared by Unicode
+code points, null after every `reference_id`.  It is never assembled by
+stitching supports across different drifts.  With empty `peaks`, `K` is 0, the
+witness drift is the input lower bound and `assignments` is empty.
+
+### Report
+
+A successful report is exactly
+
+```json
+{
+  "schema_version": 1,
+  "source_sha256": "<sha256 of source bytes>",
+  "result": {
+    "runs": [
+      {"run_id": "...", "maximum_matches": 2,
+       "best_drifts": [{"lower": "1", "upper": "1"}],
+       "peaks": [{"peak_id": "...", "reference_ids": ["..."],
+                  "can_be_unmatched": false}],
+       "witness": {"drift": "1",
+                   "assignments": [{"peak_id": "...", "reference_id": "..."}]}}
+    ]
+  }
+}
+```
+
+`runs` follows the input run order.  `peaks` and `assignments` are sorted by
+`peak_id` (Unicode code points); `assignments` lists every peak, with JSON
+null for an unmatched one.  `reference_ids` is sorted, duplicate-free.
+`maximum_matches` is a JSON integer and `can_be_unmatched` a JSON boolean.
+All drift bounds in the output are reduced `Fraction` strings (`"0"`, `"-1"`,
+`"1/2"`), never JSON numbers, never non-reduced fractions, never negative
+zero.  Identical source bytes produce identical reports.
+
+### Algorithm and correctness organisation
+
+All comparisons use exact `Fraction` arithmetic.  Per run, each compatible
+peak/reference pair contributes one closed drift interval, so the feasibility
+graph `E(d)` changes only at interval endpoints.  The drift domain is swept
+left to right over *regions* — each endpoint point and each open segment
+between consecutive endpoints — instead of solving every region independently
+from scratch: a single maximum matching is maintained incrementally, adding
+the edges that open at a point and dropping the ones that close after it,
+repaired each time by breadth-first augmenting paths.  No matching or peak
+permutation is ever enumerated.
+
+Closed endpoints stay exact because `E(x)` at a point is a superset of the
+adjacent segment edge sets: the matching size at a point dominates its
+neighbours, so an optimal open segment always has optimal endpoints and the
+optimal drift set is a union of closed regions whose closures merge into the
+reported closed intervals; isolated optimal points survive as `[x, x]`.
+
+Identity supports are computed per region from one maximum matching via the
+standard alternating-path characterisation (orient unmatched edges
+left-to-right and matched edges right-to-left): an edge is in some maximum
+matching of the region iff it is matched, lies on a directed cycle (same
+strongly connected component), is reachable from an unmatched peak, or reaches
+an unmatched reference; a peak can be unmatched iff it is reachable from an
+unmatched peak (itself included).  Supports and `can_be_unmatched` accumulate
+only over regions whose matching size equals the current best, resetting
+whenever a larger size is found, so the final values are exactly the union
+over the whole optimal drift set.  The witness reuses the same
+characterisation greedily at the minimum optimal drift: peaks are fixed in
+`peak_id` order, each taking the smallest still-feasible `reference_id` (null
+only when none remains), which yields the documented lexicographic minimum.
+
+### Examples
+
+`fixtures/peaks-example1.json`: references `a(A,[0,1])`, `b(B,[0,1])` and
+peaks `p(A,1)`, `q(B,2)` with drift domain `[0,2]`.  Only the single drift
+`1` aligns both pairs, so `K = 2` and `best_drifts` is exactly `[[1, 1]]`;
+every open neighbourhood of `1` explains only one peak.
+
+`fixtures/peaks-example2.json`: references `a(A,[0,1])`, `b(A,[3,4])` and one
+peak `p(A,3)` with drift domain `[-1,3]`.  `K = 1`, the optimal drifts are
+`[-1, 0]` and `[2, 3]`, `p` supports both `a` and `b` but cannot be unmatched,
+and the canonical witness uses drift `-1` with `p` assigned to `b`.
+
+`fixtures/peaks-linkage.json`: references `a(A,[0,0])`, `b(A,[1,1])`,
+`c(B,[0,1])` and peaks `p(A,1)`, `q(B,1)` with drift domain `[0,1]`.  `K = 2`
+with optimal drifts exactly the two single points `0` and `1`; `p` supports
+both `a` and `b`.  Narrowing `c` back to `[0,0]` would leave only drift `1`
+optimal and `p` supporting only `a` — a window change in one element group
+reshapes the identity support of another.
+
+`fixtures/peaks-scale-40.json`: 40 references and 40 peaks, all formula `A`,
+windows `[0,1]`, times `1`, drift domain `[0,1]`.  `K = 40`, the whole domain
+is optimal, every peak supports all 40 references and none can be unmatched;
+the canonical witness pairs peaks and references in identifier order.  The
+support sets are derived from the alternating structure, not by enumerating
+the `40!` perfect matchings.
+
+```sh
+reaction-peaks --source fixtures/peaks-example1.json --output run/peaks1.json
+reaction-peaks --source fixtures/peaks-scale-40.json --output run/peaks40.json
+```

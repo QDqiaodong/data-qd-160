@@ -1,0 +1,16 @@
+{
+  "references": [
+    {"reference_id": "a", "formula": "A", "window": {"lower": "0", "upper": "1"}},
+    {"reference_id": "b", "formula": "B", "window": {"lower": "0", "upper": "1"}}
+  ],
+  "runs": [
+    {
+      "run_id": "single-point",
+      "drift": {"lower": "0", "upper": "2"},
+      "peaks": [
+        {"peak_id": "p", "formula": "A", "time": "1"},
+        {"peak_id": "q", "formula": "B", "time": "2"}
+      ]
+    }
+  ]
+}

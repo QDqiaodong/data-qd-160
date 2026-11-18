@@ -1,0 +1,535 @@
+{
+  "references": [
+    {
+      "reference_id": "r00",
+      "formula": "A",
+      "window": {
+        "lower": "0",
+        "upper": "1"
+      }
+    },
+    {
+      "reference_id": "r01",
+      "formula": "A",
+      "window": {
+        "lower": "0",
+        "upper": "1"
+      }
+    },
+    {
+      "reference_id": "r02",
+      "formula": "A",
+      "window": {
+        "lower": "0",
+        "upper": "1"
+      }
+    },
+    {
+      "reference_id": "r03",
+      "formula": "A",
+      "window": {
+        "lower": "0",
+        "upper": "1"
+      }
+    },
+    {
+      "reference_id": "r04",
+      "formula": "A",
+      "window": {
+        "lower": "0",
+        "upper": "1"
+      }
+    },
+    {
+      "reference_id": "r05",
+      "formula": "A",
+      "window": {
+        "lower": "0",
+        "upper": "1"
+      }
+    },
+    {
+      "reference_id": "r06",
+      "formula": "A",
+      "window": {
+        "lower": "0",
+        "upper": "1"
+      }
+    },
+    {
+      "reference_id": "r07",
+      "formula": "A",
+      "window": {
+        "lower": "0",
+        "upper": "1"
+      }
+    },
+    {
+      "reference_id": "r08",
+      "formula": "A",
+      "window": {
+        "lower": "0",
+        "upper": "1"
+      }
+    },
+    {
+      "reference_id": "r09",
+      "formula": "A",
+      "window": {
+        "lower": "0",
+        "upper": "1"
+      }
+    },
+    {
+      "reference_id": "r10",
+      "formula": "A",
+      "window": {
+        "lower": "0",
+        "upper": "1"
+      }
+    },
+    {
+      "reference_id": "r11",
+      "formula": "A",
+      "window": {
+        "lower": "0",
+        "upper": "1"
+      }
+    },
+    {
+      "reference_id": "r12",
+      "formula": "A",
+      "window": {
+        "lower": "0",
+        "upper": "1"
+      }
+    },
+    {
+      "reference_id": "r13",
+      "formula": "A",
+      "window": {
+        "lower": "0",
+        "upper": "1"
+      }
+    },
+    {
+      "reference_id": "r14",
+      "formula": "A",
+      "window": {
+        "lower": "0",
+        "upper": "1"
+      }
+    },
+    {
+      "reference_id": "r15",
+      "formula": "A",
+      "window": {
+        "lower": "0",
+        "upper": "1"
+      }
+    },
+    {
+      "reference_id": "r16",
+      "formula": "A",
+      "window": {
+        "lower": "0",
+        "upper": "1"
+      }
+    },
+    {
+      "reference_id": "r17",
+      "formula": "A",
+      "window": {
+        "lower": "0",
+        "upper": "1"
+      }
+    },
+    {
+      "reference_id": "r18",
+      "formula": "A",
+      "window": {
+        "lower": "0",
+        "upper": "1"
+      }
+    },
+    {
+      "reference_id": "r19",
+      "formula": "A",
+      "window": {
+        "lower": "0",
+        "upper": "1"
+      }
+    },
+    {
+      "reference_id": "r20",
+      "formula": "A",
+      "window": {
+        "lower": "0",
+        "upper": "1"
+      }
+    },
+    {
+      "reference_id": "r21",
+      "formula": "A",
+      "window": {
+        "lower": "0",
+        "upper": "1"
+      }
+    },
+    {
+      "reference_id": "r22",
+      "formula": "A",
+      "window": {
+        "lower": "0",
+        "upper": "1"
+      }
+    },
+    {
+      "reference_id": "r23",
+      "formula": "A",
+      "window": {
+        "lower": "0",
+        "upper": "1"
+      }
+    },
+    {
+      "reference_id": "r24",
+      "formula": "A",
+      "window": {
+        "lower": "0",
+        "upper": "1"
+      }
+    },
+    {
+      "reference_id": "r25",
+      "formula": "A",
+      "window": {
+        "lower": "0",
+        "upper": "1"
+      }
+    },
+    {
+      "reference_id": "r26",
+      "formula": "A",
+      "window": {
+        "lower": "0",
+        "upper": "1"
+      }
+    },
+    {
+      "reference_id": "r27",
+      "formula": "A",
+      "window": {
+        "lower": "0",
+        "upper": "1"
+      }
+    },
+    {
+      "reference_id": "r28",
+      "formula": "A",
+      "window": {
+        "lower": "0",
+        "upper": "1"
+      }
+    },
+    {
+      "reference_id": "r29",
+      "formula": "A",
+      "window": {
+        "lower": "0",
+        "upper": "1"
+      }
+    },
+    {
+      "reference_id": "r30",
+      "formula": "A",
+      "window": {
+        "lower": "0",
+        "upper": "1"
+      }
+    },
+    {
+      "reference_id": "r31",
+      "formula": "A",
+      "window": {
+        "lower": "0",
+        "upper": "1"
+      }
+    },
+    {
+      "reference_id": "r32",
+      "formula": "A",
+      "window": {
+        "lower": "0",
+        "upper": "1"
+      }
+    },
+    {
+      "reference_id": "r33",
+      "formula": "A",
+      "window": {
+        "lower": "0",
+        "upper": "1"
+      }
+    },
+    {
+      "reference_id": "r34",
+      "formula": "A",
+      "window": {
+        "lower": "0",
+        "upper": "1"
+      }
+    },
+    {
+      "reference_id": "r35",
+      "formula": "A",
+      "window": {
+        "lower": "0",
+        "upper": "1"
+      }
+    },
+    {
+      "reference_id": "r36",
+      "formula": "A",
+      "window": {
+        "lower": "0",
+        "upper": "1"
+      }
+    },
+    {
+      "reference_id": "r37",
+      "formula": "A",
+      "window": {
+        "lower": "0",
+        "upper": "1"
+      }
+    },
+    {
+      "reference_id": "r38",
+      "formula": "A",
+      "window": {
+        "lower": "0",
+        "upper": "1"
+      }
+    },
+    {
+      "reference_id": "r39",
+      "formula": "A",
+      "window": {
+        "lower": "0",
+        "upper": "1"
+      }
+    }
+  ],
+  "runs": [
+    {
+      "run_id": "scale-40",
+      "drift": {
+        "lower": "0",
+        "upper": "1"
+      },
+      "peaks": [
+        {
+          "peak_id": "p00",
+          "formula": "A",
+          "time": "1"
+        },
+        {
+          "peak_id": "p01",
+          "formula": "A",
+          "time": "1"
+        },
+        {
+          "peak_id": "p02",
+          "formula": "A",
+          "time": "1"
+        },
+        {
+          "peak_id": "p03",
+          "formula": "A",
+          "time": "1"
+        },
+        {
+          "peak_id": "p04",
+          "formula": "A",
+          "time": "1"
+        },
+        {
+          "peak_id": "p05",
+          "formula": "A",
+          "time": "1"
+        },
+        {
+          "peak_id": "p06",
+          "formula": "A",
+          "time": "1"
+        },
+        {
+          "peak_id": "p07",
+          "formula": "A",
+          "time": "1"
+        },
+        {
+          "peak_id": "p08",
+          "formula": "A",
+          "time": "1"
+        },
+        {
+          "peak_id": "p09",
+          "formula": "A",
+          "time": "1"
+        },
+        {
+          "peak_id": "p10",
+          "formula": "A",
+          "time": "1"
+        },
+        {
+          "peak_id": "p11",
+          "formula": "A",
+          "time": "1"
+        },
+        {
+          "peak_id": "p12",
+          "formula": "A",
+          "time": "1"
+        },
+        {
+          "peak_id": "p13",
+          "formula": "A",
+          "time": "1"
+        },
+        {
+          "peak_id": "p14",
+          "formula": "A",
+          "time": "1"
+        },
+        {
+          "peak_id": "p15",
+          "formula": "A",
+          "time": "1"
+        },
+        {
+          "peak_id": "p16",
+          "formula": "A",
+          "time": "1"
+        },
+        {
+          "peak_id": "p17",
+          "formula": "A",
+          "time": "1"
+        },
+        {
+          "peak_id": "p18",
+          "formula": "A",
+          "time": "1"
+        },
+        {
+          "peak_id": "p19",
+          "formula": "A",
+          "time": "1"
+        },
+        {
+          "peak_id": "p20",
+          "formula": "A",
+          "time": "1"
+        },
+        {
+          "peak_id": "p21",
+          "formula": "A",
+          "time": "1"
+        },
+        {
+          "peak_id": "p22",
+          "formula": "A",
+          "time": "1"
+        },
+        {
+          "peak_id": "p23",
+          "formula": "A",
+          "time": "1"
+        },
+        {
+          "peak_id": "p24",
+          "formula": "A",
+          "time": "1"
+        },
+        {
+          "peak_id": "p25",
+          "formula": "A",
+          "time": "1"
+        },
+        {
+          "peak_id": "p26",
+          "formula": "A",
+          "time": "1"
+        },
+        {
+          "peak_id": "p27",
+          "formula": "A",
+          "time": "1"
+        },
+        {
+          "peak_id": "p28",
+          "formula": "A",
+          "time": "1"
+        },
+        {
+          "peak_id": "p29",
+          "formula": "A",
+          "time": "1"
+        },
+        {
+          "peak_id": "p30",
+          "formula": "A",
+          "time": "1"
+        },
+        {
+          "peak_id": "p31",
+          "formula": "A",
+          "time": "1"
+        },
+        {
+          "peak_id": "p32",
+          "formula": "A",
+          "time": "1"
+        },
+        {
+          "peak_id": "p33",
+          "formula": "A",
+          "time": "1"
+        },
+        {
+          "peak_id": "p34",
+          "formula": "A",
+          "time": "1"
+        },
+        {
+          "peak_id": "p35",
+          "formula": "A",
+          "time": "1"
+        },
+        {
+          "peak_id": "p36",
+          "formula": "A",
+          "time": "1"
+        },
+        {
+          "peak_id": "p37",
+          "formula": "A",
+          "time": "1"
+        },
+        {
+          "peak_id": "p38",
+          "formula": "A",
+          "time": "1"
+        },
+        {
+          "peak_id": "p39",
+          "formula": "A",
+          "time": "1"
+        }
+      ]
+    }
+  ]
+}
