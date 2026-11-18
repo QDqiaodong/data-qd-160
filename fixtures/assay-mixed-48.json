@@ -1,0 +1,326 @@
+{
+ "species": [
+  {
+   "species_id": "s00",
+   "formula": "HC"
+  },
+  {
+   "species_id": "s01",
+   "formula": "HC2"
+  },
+  {
+   "species_id": "s02",
+   "formula": "H2C"
+  },
+  {
+   "species_id": "s03",
+   "formula": "H2C2"
+  },
+  {
+   "species_id": "s04",
+   "formula": "H3C"
+  },
+  {
+   "species_id": "s05",
+   "formula": "H3C2"
+  },
+  {
+   "species_id": "s06",
+   "formula": "HN"
+  },
+  {
+   "species_id": "s07",
+   "formula": "HN2"
+  },
+  {
+   "species_id": "s08",
+   "formula": "H2N"
+  },
+  {
+   "species_id": "s09",
+   "formula": "H2N2"
+  },
+  {
+   "species_id": "s10",
+   "formula": "H3N"
+  },
+  {
+   "species_id": "s11",
+   "formula": "H3N2"
+  },
+  {
+   "species_id": "s12",
+   "formula": "HO"
+  },
+  {
+   "species_id": "s13",
+   "formula": "HO2"
+  },
+  {
+   "species_id": "s14",
+   "formula": "H2O"
+  },
+  {
+   "species_id": "s15",
+   "formula": "H2O2"
+  },
+  {
+   "species_id": "s16",
+   "formula": "H3O"
+  },
+  {
+   "species_id": "s17",
+   "formula": "H3O2"
+  },
+  {
+   "species_id": "s18",
+   "formula": "HS"
+  },
+  {
+   "species_id": "s19",
+   "formula": "HS2"
+  },
+  {
+   "species_id": "s20",
+   "formula": "H2S"
+  },
+  {
+   "species_id": "s21",
+   "formula": "H2S2"
+  },
+  {
+   "species_id": "s22",
+   "formula": "H3S"
+  },
+  {
+   "species_id": "s23",
+   "formula": "H3S2"
+  },
+  {
+   "species_id": "s24",
+   "formula": "HP"
+  },
+  {
+   "species_id": "s25",
+   "formula": "HP2"
+  },
+  {
+   "species_id": "s26",
+   "formula": "H2P"
+  },
+  {
+   "species_id": "s27",
+   "formula": "H2P2"
+  },
+  {
+   "species_id": "s28",
+   "formula": "H3P"
+  },
+  {
+   "species_id": "s29",
+   "formula": "H3P2"
+  },
+  {
+   "species_id": "s30",
+   "formula": "CH"
+  },
+  {
+   "species_id": "s31",
+   "formula": "CH2"
+  },
+  {
+   "species_id": "s32",
+   "formula": "C2H"
+  },
+  {
+   "species_id": "s33",
+   "formula": "C2H2"
+  },
+  {
+   "species_id": "s34",
+   "formula": "C3H"
+  },
+  {
+   "species_id": "s35",
+   "formula": "C3H2"
+  },
+  {
+   "species_id": "s36",
+   "formula": "CN"
+  },
+  {
+   "species_id": "s37",
+   "formula": "CN2"
+  },
+  {
+   "species_id": "s38",
+   "formula": "C2N"
+  },
+  {
+   "species_id": "s39",
+   "formula": "C2N2"
+  },
+  {
+   "species_id": "s40",
+   "formula": "C3N"
+  },
+  {
+   "species_id": "s41",
+   "formula": "C3N2"
+  },
+  {
+   "species_id": "s42",
+   "formula": "CO"
+  },
+  {
+   "species_id": "s43",
+   "formula": "CO2"
+  },
+  {
+   "species_id": "s44",
+   "formula": "C2O"
+  },
+  {
+   "species_id": "s45",
+   "formula": "C2O2"
+  },
+  {
+   "species_id": "s46",
+   "formula": "C3O"
+  },
+  {
+   "species_id": "s47",
+   "formula": "SeH2"
+  }
+ ],
+ "samples": [
+  {
+   "sample_id": "forty-eight-dof",
+   "total_moles": {
+    "lower": "13.125",
+    "upper": "16.875"
+   },
+   "measurements": [
+    {
+     "measurement_id": "AH",
+     "element": "H",
+     "lower": "30.6",
+     "upper": "37.4"
+    },
+    {
+     "measurement_id": "AC",
+     "element": "C",
+     "lower": "11.7",
+     "upper": "14.3"
+    },
+    {
+     "measurement_id": "AN",
+     "element": "N",
+     "lower": "7.2",
+     "upper": "8.8"
+    },
+    {
+     "measurement_id": "AO",
+     "element": "O",
+     "lower": "1.8",
+     "upper": "2.2"
+    },
+    {
+     "measurement_id": "AS",
+     "element": "S",
+     "lower": "3.6",
+     "upper": "4.4"
+    },
+    {
+     "measurement_id": "AP",
+     "element": "P",
+     "lower": "1.8",
+     "upper": "2.2"
+    },
+    {
+     "measurement_id": "ASe",
+     "element": "Se",
+     "lower": "1.8",
+     "upper": "2.2"
+    }
+   ]
+  },
+  {
+   "sample_id": "redundant",
+   "total_moles": {
+    "lower": "2",
+    "upper": "20"
+   },
+   "measurements": [
+    {
+     "measurement_id": "bH1",
+     "element": "H",
+     "lower": "20",
+     "upper": "40"
+    },
+    {
+     "measurement_id": "bH2",
+     "element": "H",
+     "lower": "24",
+     "upper": "36"
+    },
+    {
+     "measurement_id": "bN",
+     "element": "N",
+     "lower": "0",
+     "upper": "12"
+    },
+    {
+     "measurement_id": "bXe",
+     "element": "Xe",
+     "lower": "0",
+     "upper": "0"
+    }
+   ]
+  },
+  {
+   "sample_id": "contradictory",
+   "total_moles": {
+    "lower": "0",
+    "upper": "10"
+   },
+   "measurements": [
+    {
+     "measurement_id": "cH1",
+     "element": "H",
+     "lower": "0",
+     "upper": "1"
+    },
+    {
+     "measurement_id": "cH2",
+     "element": "H",
+     "lower": "5",
+     "upper": "6"
+    }
+   ]
+  },
+  {
+   "sample_id": "empty-zero",
+   "total_moles": {
+    "lower": "0",
+    "upper": "0"
+   },
+   "measurements": []
+  },
+  {
+   "sample_id": "zero-nonempty",
+   "total_moles": {
+    "lower": "0",
+    "upper": "0"
+   },
+   "measurements": [
+    {
+     "measurement_id": "eH",
+     "element": "H",
+     "lower": "1",
+     "upper": "2"
+    }
+   ]
+  }
+ ]
+}

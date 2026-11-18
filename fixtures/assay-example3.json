@@ -1,0 +1,15 @@
+{
+  "species": [
+    {"species_id": "w", "formula": "H2O"}
+  ],
+  "samples": [
+    {
+      "sample_id": "off-by-nanomole",
+      "total_moles": {"lower": "1", "upper": "1"},
+      "measurements": [
+        {"measurement_id": "mH", "element": "H", "lower": "2", "upper": "2"},
+        {"measurement_id": "mO", "element": "O", "lower": "1.000000001", "upper": "1.000000001"}
+      ]
+    }
+  ]
+}

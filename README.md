@@ -52,3 +52,20 @@ cli.py 与 lots.py 衔接两个命令的数据链路。fixtures 为明确自制�
 化学式支持[A-Z][a-z]?元素token、正整数下标<=1000和圆括号嵌套<=10层，长度<=100、每元素原子数<=10^12；不验证周期表符号真实性，不接受同位素、离子电荷、水合点或反应箭头。
 构建原子守恒有理矩阵求零空间；必须恰一维并有全部严格正系数，约为最小互素正整数。欠定/不可正配平整批拒绝，不任意选解；不平衡电荷或判断实际反应可行性。
 以available/coefficient最小值确定反应进度，可有并列限量试剂和零进度；输出消耗、剩余、产物理论摩尔上限及每进度原子守恒证据。样例2H2+O2→2H2O，5mol H2/2mol O2时进度2、H2余1、O2余0、H2O理论4mol。不是实验操作指南，不包含温压、动力学、安全性或真实产率。
+
+## 测量一致性核对（`reaction-assay`）
+
+`reaction-assay --source INPUT --output REPORT` 核对候选物种组成与重叠的元素摩尔测量区间：
+把每个样品化为一个精确线性规划，判断是否存在共同组成，并给出每种组分可被数据识别的紧界。
+报告为每个界给出可行组成见证与非负对偶证书，无法解释的样品给出精确 Farkas 矛盾向量。
+与 `reaction-batch`、`reaction-lots` 相互独立，原输入、输出与退出码不变。
+
+```sh
+.venv/bin/reaction-assay --source fixtures/assay-example1.json --output run/assay1.json
+.venv/bin/reaction-assay --source fixtures/assay-mixed-48.json --output run/assay48.json
+```
+
+输入严格为 `{"species":[...],"samples":[...]}`；候选物种 1..60、样品 1..8、
+每样品测量 0..120。全部数值为最简 Fraction 字符串；相等区间视为精确等式，
+`1.000000001` 与 `1` 的差异不会被容差吞掉。完整契约、证书定义与样例见
+[docs/contract.md](docs/contract.md)。

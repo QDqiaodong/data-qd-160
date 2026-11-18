@@ -1,0 +1,17 @@
+{
+  "species": [
+    {"species_id": "h", "formula": "H2"},
+    {"species_id": "o", "formula": "O2"},
+    {"species_id": "w", "formula": "H2O"}
+  ],
+  "samples": [
+    {
+      "sample_id": "water-only",
+      "total_moles": {"lower": "2", "upper": "2"},
+      "measurements": [
+        {"measurement_id": "mH", "element": "H", "lower": "3", "upper": "3"},
+        {"measurement_id": "mO", "element": "O", "lower": "1.5", "upper": "1.5"}
+      ]
+    }
+  ]
+}

@@ -10,5 +10,6 @@ dependencies = []
 [project.scripts]
 reaction-batch = "reaction_batch.cli:main"
 reaction-lots = "reaction_batch.cli:lots_main"
+reaction-assay = "reaction_batch.cli:assay_main"
 [tool.setuptools.packages.find]
 where = ["src"]

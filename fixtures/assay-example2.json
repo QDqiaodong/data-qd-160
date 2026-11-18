@@ -1,0 +1,16 @@
+{
+  "species": [
+    {"species_id": "a", "formula": "H2O"},
+    {"species_id": "b", "formula": "OH2"}
+  ],
+  "samples": [
+    {
+      "sample_id": "two-writings",
+      "total_moles": {"lower": "1", "upper": "1"},
+      "measurements": [
+        {"measurement_id": "mH", "element": "H", "lower": "2", "upper": "2"},
+        {"measurement_id": "mO", "element": "O", "lower": "1", "upper": "1"}
+      ]
+    }
+  ]
+}
