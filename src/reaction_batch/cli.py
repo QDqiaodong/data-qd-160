@@ -4,6 +4,7 @@ ASSAY_DESCRIPTION='Exact composition bounds under element molar measurements'
 PEAKS_DESCRIPTION='Shared-drift chromatographic peak identity reconciliation'
 ISOTOPES_DESCRIPTION='Exact isotope mass/tag joint distribution and channel accounting'
 SPLIT_DESCRIPTION='Leakage-safe train/test split for chemistry classification samples'
+CERTIFY_DESCRIPTION='Traceable piecewise calibration, corrected observations and protected certificates'
 import argparse, json, sys
 from pathlib import Path
 from .common import read, save
@@ -12,6 +13,7 @@ from .lot_model import analyze as analyze_lots
 from .peaks import analyze as analyze_peaks
 from .isotopes import analyze as analyze_isotopes
 from .split import analyze as analyze_split
+from .certify import analyze as analyze_certify
 from .model import analyze
 
 
@@ -43,6 +45,11 @@ def run_isotopes(source):
 def run_split(source):
     data,digest=read(source)
     return {'schema_version':1,'source_sha256':digest,'result':analyze_split(data)}
+
+
+def run_certify(source):
+    data,digest=read(source)
+    return {'schema_version':1,'source_sha256':digest,'result':analyze_certify(data)}
 
 
 def _main(description, compute):
@@ -80,6 +87,10 @@ def isotopes_main():
 
 def split_main():
     return _main(SPLIT_DESCRIPTION, run_split)
+
+
+def certify_main():
+    return _main(CERTIFY_DESCRIPTION, run_certify)
 
 
 if __name__=='__main__':

@@ -123,3 +123,30 @@ assignment 向量）。支持只来自同一合法漂移下的完整 K 匹配，
 ```
 
 完整契约、通道排他规则、矩守恒与样例说明见 [docs/contract.md](docs/contract.md)。
+
+## 分段仪器校准、更正观测与受保护合格证（`reaction-certify`）
+
+`reaction-certify --source INPUT --output REPORT` 为离线教学浓度记录维护可追溯的
+分段仪器校准、更正观测与受保护合格证。输入恰为 `{"batches":[...],"queries":[...]}`：
+每批同时施加 calibration/observation/certificate 三类实体的 put/delete，先在已接受
+状态上构造候选视图，再核对全部活动合格证；追溯校准使旧证失效时整批回滚，同批撤证或
+替换使最终视图合法时才接受，结果与 changes 排列无关。业务拒绝按固定优先级输出
+`missing_delete`、`overlap`、`missing_member`、`formula_mismatch`、
+`unavailable_member`、`mean_out_of_range`、`range_exceeded`，合法字面值但业务不成立
+不退出 2；结构/字段/字面值/上限错误才整文件退出 2 并保留旧报告。
+
+校准按仪器在半开区间 `[start,end)` 生效，严格递增 raw 节点间作精确有理数线性插值，
+同仪器区间不得重叠；观测无时间覆盖报 `no_calibration`，raw 越出曲线定义域报
+`outside_curve`。合格证要求成员观测全部可用、解析后的元素计数字典与目标完全相同
+（`H2O` 与 `OH2` 同式，`A` 与 `A2` 不约分）、精确加权均值落入闭区间且极差不超过
+`max_range`。查询 `as_of=k` 严格对应前 k 批视图，被拒绝批占序号但无状态效果，后续
+追溯更正不得改写较早前缀的数值、可用性、校准来源与证书成员。所有数量输出为最简
+Fraction 字符串，时刻类字段保持整数。实现仅保留被查询前缀的不可变记录快照；
+`tests/reference_certify.py` 是独立小规模参考实现，测试以随机更正序列、changes 排列
+置换和 300 批/6000 变更/2000 成员/60 查询的规模样例交叉核对。
+
+```sh
+.venv/bin/reaction-certify --source fixtures/certify-example.json --output run/certify-example.json
+```
+
+完整契约、原因优先级、报告键与算法说明见 [docs/contract.md](docs/contract.md)。

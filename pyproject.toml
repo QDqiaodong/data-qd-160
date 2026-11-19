@@ -14,5 +14,6 @@ reaction-assay = "reaction_batch.cli:assay_main"
 reaction-peaks = "reaction_batch.cli:peaks_main"
 reaction-isotopes = "reaction_batch.cli:isotopes_main"
 reaction-split = "reaction_batch.cli:split_main"
+reaction-certify = "reaction_batch.cli:certify_main"
 [tool.setuptools.packages.find]
 where = ["src"]

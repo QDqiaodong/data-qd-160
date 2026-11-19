@@ -840,3 +840,190 @@ reaction-split --source fixtures/split-example2.json --output run/split2.json
 reaction-split --source fixtures/split-example3.json --output run/split3.json
 reaction-split --source fixtures/split-scale-600.json --output run/split600.json
 ```
+
+## Certify mode (`reaction-certify`)
+
+`reaction-certify --source INPUT --output REPORT` adds a seventh, independent
+command for offline teaching concentration records: it maintains traceable
+piecewise instrument calibrations, corrected observations and protected
+certificates over an ordered batch stream, and reports the calibration values
+and certificate evidence knowable at each requested batch prefix.  It is a
+deterministic accounting of supplied teaching data: one file is computed from
+the empty state, no state persists across files, and nothing is inferred about
+real instrument performance or experimental safety.  The original six commands
+keep their entries, inputs and reports.
+
+### Input
+
+The input is exactly `{"batches": [...], "queries": [...]}` with no other
+top-level keys.  Repeated JSON keys, unknown keys, non-finite values, invalid
+identifiers/formulas/quantities, out-of-bound values, duplicate batch or query
+ids, a repeated `(entity, id)` inside one batch, illegal intervals or curve
+nodes, duplicate/non-positive certificate members, inverted thresholds and an
+illegal `as_of` are all whole-file input errors (exit 2, no partial report,
+an existing report left untouched).  The complete file is structurally
+validated before any batch runs, so a malformed trailing record cannot be
+hidden by earlier valid batches.
+
+- `batches` has 0..300 entries processed in array order.  Each is exactly
+  `{"batch_id", "changes"}`; `batch_id` uses `common.ident`, is case
+  sensitive and unique across the file.  A batch may carry an empty `changes`
+  array.  All changes across the file total at most 6000.
+- A change is exactly
+  `{"entity", "action": "put", "record"}` or
+  `{"entity", "action": "delete", "id"}`, where `entity` is exactly
+  `calibration`, `observation` or `certificate`.  The three entities have
+  independent id spaces.  At most one change per `(entity, id)` may appear in
+  one batch; a deleted id may be recreated in a later batch.
+- Calibration: exactly
+  `{"id", "instrument", "start", "end", "points"}`.  `start`/`end` are JSON
+  integers 0..10^9 with `start < end` (booleans rejected).  `points` has
+  2..64 `{"raw", "value"}` nodes with strictly increasing `raw`; `value`
+  need not be monotone.  All put calibration nodes across the file total at
+  most 20000.  Every `raw`/`value` is a nonnegative `chemistry.quantity`
+  decimal string (JSON numbers and fraction literals are rejected).
+- Observation: exactly
+  `{"id", "instrument", "time", "formula", "raw"}`.  `time` is an integer
+  0..10^9, `formula` uses the full existing formula grammar and `raw` is a
+  quantity string.  An observation may legally have no covering calibration
+  or a raw value outside the curve domain; that only matters when a
+  certificate asks it for support.  `instrument` is only a matching key.
+- Certificate: exactly
+  `{"id", "formula", "members", "lower", "upper", "max_range"}`.  `members`
+  has 1..64 entries `{"observation_id", "weight"}` with distinct
+  `observation_id`s and positive weights; `lower <= upper`.  Member entries
+  across all put certificate records total at most 2000.  One observation may
+  support several certificates.  `weight`, `lower`, `upper`, `max_range` are
+  quantity strings.
+- `queries` has 0..60 entries, each exactly `{"query_id", "as_of"}` with a
+  unique `common.ident` id and an integer `as_of` in `0..len(batches)`.
+  Order need not increase and the same prefix may repeat.  `as_of = k` is
+  strictly the view knowable after the first `k` batches; rejected batches
+  still occupy a sequence number but have no state effect.
+
+`common.read`/`common.save` still apply: at most 8 MB, duplicate JSON keys and
+non-finite numbers rejected, `source_sha256` bound to the exact source bytes,
+refusal of a symlink or same-path output, and atomic successful replacement.
+
+### Calibration and observation semantics
+
+Calibrations of one instrument take effect on the half-open interval
+`[start, end)`.  The curve interpolates exactly with rational arithmetic
+between strictly increasing raw nodes:
+
+```
+y = y0 + (x - x0) * (y1 - y0) / (x1 - x0)
+```
+
+End nodes belong to the domain; a raw value exactly equal to an internal node
+returns that node's value.  Adjacent valid intervals may meet with the first
+interval's `end` equal to the next one's `start`, and that time belongs only
+to the later interval.  Within one committed view, valid intervals of the same
+instrument must not overlap; different instruments are unconstrained.  An
+observation whose time no interval covers is `unavailable` with reason
+`no_calibration` (`calibration_id` and `value` null).  If a covering
+calibration exists but the raw value lies outside its node domain, the
+observation is `unavailable` with reason `outside_curve`, the selected
+`calibration_id` still reported and `value` null.  A retroactive correction may
+split, merge or reshape a past calibration; no calibration receives priority.
+
+### Batch acceptance and protected certificates
+
+Each batch applies all its puts and deletes simultaneously to a candidate view
+on top of the last accepted state — `put` replaces the whole record of an
+existing id, otherwise creates it — and only the final candidate is validated,
+so the result never depends on change ordering.  The business rejection
+reasons, in fixed output priority, are:
+
+1. `missing_delete` — a delete names an absent key of that entity;
+2. `overlap` — two same-instrument calibration intervals overlap;
+3. `missing_member` — a certificate references an absent observation;
+4. `formula_mismatch` — a member's parsed element-count dictionary differs
+   from the certificate target's (`H2O` and `OH2` match; `A` and `A2` never
+   reduce to each other);
+5. `unavailable_member` — a member observation has no value in this view;
+6. `mean_out_of_range` — the exact weighted mean falls outside
+   `[lower, upper]`;
+7. `range_exceeded` — `max(value) - min(value)` exceeds `max_range`.
+
+With member values `v_i` and positive weights `w_i`,
+`mean = sum(w_i * v_i) / sum(w_i)` and `range = max(v_i) - min(v_i)`.
+Members, weights and thresholds are never auto-adjusted.  If any reason
+applies, the whole batch — all three entity kinds — rolls back to the prior
+state, processing continues with later batches, and no partial modification is
+published.  Certificates untouched by the batch are still rechecked, so a
+retroactive calibration that would invalidate an active certificate is
+rejected unless the same batch also withdraws or replaces that certificate and
+the final view is fully legal.
+
+### Report
+
+The report keeps the three top-level keys `schema_version` (fixed at 1),
+`source_sha256` and `result`.  `result` is exactly `{"batches", "queries"}`.
+
+- `batches` follows source order; each entry is exactly
+  `{"batch_id", "status", "reason"}` with `status` `accepted` or `rejected`
+  and `reason` null on acceptance or the first applicable reason code.
+- `queries` follows input order; each entry is exactly
+  `{"query_id", "as_of", "observations", "certificates"}`.  Both entity
+  arrays sort by id in Python (Unicode code point) order and list only
+  entities existing at that prefix; the empty state yields empty arrays.
+  No calibration catalogue snapshot is emitted — each observation's source
+  calibration is the evidence.
+- An observation item has exactly the keys `id`, `instrument`, `time`,
+  `formula`, `raw`, `status`, `calibration_id`, `value`, `reason`.  The first
+  five mirror the view's record with `raw` canonicalised; `time` stays a JSON
+  integer.  On availability `calibration_id` is the selected calibration,
+  `value` is the exact interpolated value and `reason` is null; otherwise the
+  two unavailable forms above apply.
+- A certificate item has exactly the keys `id`, `formula`, `lower`, `upper`,
+  `max_range`, `mean`, `range`, `members`.  Members sort by
+  `observation_id`; each is exactly
+  `{"observation_id", "weight", "value", "calibration_id"}` with values taken
+  from the query's own view.  Every reported certificate passes in that view;
+  rejected candidates never appear.
+- Every output `raw`, `value`, `weight`, `lower`, `upper`, `max_range`,
+  `mean` and `range` is a simplest `Fraction` string (`"0"`, `"4"`,
+  `"1/3"`): no JSON decimals, unreduced fractions or negative zero.
+  `time`/`start`/`end`/`as_of` remain JSON integers.
+
+### Algorithm and state
+
+The parser validates every batch and query before accounting and converts all
+quantities to immutable `Fraction` records and all formulas to parsed
+element-count tuples.  Processing keeps one mutable working state of three
+entity dictionaries; each batch builds shallow candidate dictionaries, applies
+the simultaneous changes, sorts same-instrument intervals to detect any
+overlap, then re-evaluates every active certificate against an indexed
+calibration view.  On rejection the candidate is discarded and the prior
+dictionaries remain the state, so rejected and accepted batches, and every
+historical query, always refer to one consistent committed view.
+
+Only the prefixes actually named by queries are retained as snapshots, each a
+tuple of `(id, record)` references over the immutable records.  A later
+accepted retroactive correction therefore cannot alter an earlier prefix's
+values, availability, calibration source or certificate membership, while
+memory stays bounded by the at most 61 retained views rather than by 300 full
+state copies.  An independent reference implementation used by the tests
+(`tests/reference_certify.py`) re-derives every prefix directly from the empty
+state with its own interpolation and certificate checks, never calling the
+production evaluation functions, and the tests additionally permute the
+changes inside multi-change batches to confirm order independence.
+
+### Examples
+
+`fixtures/certify-example.json` is the documented calibration/withdrawal
+walkthrough.  Batch 1 installs the identity curve `c` on `[0, 20)`,
+observation `o` (time 10, raw 4, formula `H2O`) and certificate `s` targeting
+the same element counts via `OH2` with mean pinned to 4; it accepts.  Batch 2
+replaces `c` by a two-times curve, which would move `o` to 8 and invalidate
+`s`, so the batch is rejected (`mean_out_of_range`) and the identity state
+survives.  Batch 3 applies the same replacement together with deleting `s` and
+accepts.  Queries at prefixes 1 and 2 still report value 4 and the original
+certificate with source `c`; prefix 3 reports value 8 and no certificate;
+prefix 0 is empty.
+
+```sh
+reaction-certify --source fixtures/certify-example.json --output run/certify-example.json
+```
+

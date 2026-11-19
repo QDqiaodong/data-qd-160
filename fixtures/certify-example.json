@@ -1,0 +1,41 @@
+{
+  "batches": [
+    {
+      "batch_id": "b1",
+      "changes": [
+        {"entity": "calibration", "action": "put", "record": {
+          "id": "c", "instrument": "i", "start": 0, "end": 20,
+          "points": [{"raw": "0", "value": "0"}, {"raw": "10", "value": "10"}]}},
+        {"entity": "observation", "action": "put", "record": {
+          "id": "o", "instrument": "i", "time": 10, "formula": "H2O", "raw": "4"}},
+        {"entity": "certificate", "action": "put", "record": {
+          "id": "s", "formula": "OH2",
+          "members": [{"observation_id": "o", "weight": "1"}],
+          "lower": "4", "upper": "4", "max_range": "0"}}
+      ]
+    },
+    {
+      "batch_id": "b2",
+      "changes": [
+        {"entity": "calibration", "action": "put", "record": {
+          "id": "c", "instrument": "i", "start": 0, "end": 20,
+          "points": [{"raw": "0", "value": "0"}, {"raw": "10", "value": "20"}]}}
+      ]
+    },
+    {
+      "batch_id": "b3",
+      "changes": [
+        {"entity": "calibration", "action": "put", "record": {
+          "id": "c", "instrument": "i", "start": 0, "end": 20,
+          "points": [{"raw": "0", "value": "0"}, {"raw": "10", "value": "20"}]}},
+        {"entity": "certificate", "action": "delete", "id": "s"}
+      ]
+    }
+  ],
+  "queries": [
+    {"query_id": "q1", "as_of": 1},
+    {"query_id": "q2", "as_of": 2},
+    {"query_id": "q3", "as_of": 3},
+    {"query_id": "q0", "as_of": 0}
+  ]
+}
